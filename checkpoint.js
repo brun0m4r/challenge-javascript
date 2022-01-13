@@ -1,11 +1,11 @@
 // ----- IMPORTANTE -----
 
-// IMPORTANTE!: Para este checkpoint se les brindarán las 
-// implementaciones ya realizadas en las homeworks de 
+// IMPORTANTE!: Para este checkpoint se les brindarán las
+// implementaciones ya realizadas en las homeworks de
 // Queue, LinkedList y BinarySearchTree.
 // Sobre dichas implementaciónes van a tener que agregar nuevos
 // métodos o construir determinadas funciones explicados más abajo.
-// Pero todos los métodos ya implementados en las homeowrks no es 
+// Pero todos los métodos ya implementados en las homeowrks no es
 // necesario que los vuelvan a definir.
 
 const {
@@ -20,8 +20,8 @@ const {
 // EJERCICIO 1
 // Implementar la funcion 'exponencial' que recibe un parametro entero 'exp'
 // y retorna una una funcion, nos referiremos a esta ultima como funcion hija,
-// y a 'exponencial' como la funcion padre, la funcion hija debe de recibir 
-// un parametro y retornar dicho parametro elevado al parametro 'exp' de 
+// y a 'exponencial' como la funcion padre, la funcion hija debe de recibir
+// un parametro y retornar dicho parametro elevado al parametro 'exp' de
 // la funcion padre original 'exponencial'
 // Ejemplo:
 // > var sqrt = exponencial(2);
@@ -33,7 +33,9 @@ const {
 // < 16
 
 function exponencial(exp) {
-
+    return param => {
+        return Math.pow(param, exp);
+    }
 }
 
 // ----- Recursión -----
@@ -70,7 +72,17 @@ function exponencial(exp) {
 // Aclaraciones: el segundo parametro que recibe la funcion ('direccion') puede ser pasado vacio (null)
 
 function direcciones(laberinto) {
-
+    let str = "";
+    for(const property in laberinto) {
+        if(typeof laberinto[property] === 'object') {
+            str += property;
+            return str + direcciones(laberinto[property]);
+        }
+        if(laberinto[property] === 'destino') {
+            return property;
+        }
+    }
+    return str;
 }
 
 
@@ -82,13 +94,28 @@ function direcciones(laberinto) {
 // en este caso la funcion solo va a ser pensada para recibir arrays,
 // pero estos pueden tener multiples niveles de anidacion, y la funcion deepEqualArrays debe
 // comparar cada elemento, sin importar la profundidad en la que este
-// Ejemplos: 
+// Ejemplos:
 // deepEqualArrays([0,1,2], [0,1,2]) => true
 // deepEqualArrays([0,1,2], [0,1,2,3]) => false
 // deepEqualArrays([0,1,[[0,1,2],1,2]], [0,1,[[0,1,2],1,2]]) => true
 
 function deepEqualArrays(arr1, arr2) {
-
+    if(arr1.length !== arr2.length) {
+        return false;
+    } else {
+        let bool = true;
+        for(let i = 0; i < arr1.length; i++) {
+            if(typeof arr1[i] === 'object' && typeof arr2[i] === 'object') {
+                bool = deepEqualArrays(arr1[i], arr2[i]);
+            } else {
+                bool = arr1[i] === arr2[i];
+            }
+            if(bool === false) {
+                return bool
+            }
+        }
+        return bool;
+    }
 }
 
 
@@ -96,7 +123,7 @@ function deepEqualArrays(arr1, arr2) {
 // ----- LinkedList -----
 
 // Deben completar la siguiente implementacion 'OrderedLinkedList'(OLL)
-// que es muy similar a las LinkedList vistas en clase solo que 
+// que es muy similar a las LinkedList vistas en clase solo que
 // los metodos son distintos y deben de estar pensados para conservar la lista
 // ordenada de mayor a menor.
 // ejemplos:
@@ -138,13 +165,30 @@ OrderedLinkedList.prototype.print = function(){
 // > LL.print()
 // < 'head --> 5 --> 3 --> 1 --> null'
 //               4
-OrderedLinkedList.prototype.add = function(val){
-    
+OrderedLinkedList.prototype.add = function(data) {
+    const node = new Node(data);
+    if(!this.head) {
+        this.head = node;
+        return;
+    }
+    let current = this.head;
+    let previous = current;
+    if(previous.value < node.value) {
+        node.next = previous;
+        this.head = node;
+        return;
+    }
+    while(current && node.value < current.value) {
+        previous = current;
+        current = current.next;
+    }
+    previous.next = node;
+    node.next = current;
 }
 
 
 // EJERCICIO 5
-// Crea el metodo 'removeHigher' que deve devolver el valor mas alto de la linked list 
+// Crea el metodo 'removeHigher' que deve devolver el valor mas alto de la linked list
 // removiendo su nodo corresponidente:
 // Ejemplo:
 // > LL.print()
@@ -159,12 +203,15 @@ OrderedLinkedList.prototype.add = function(val){
 // < null
 
 OrderedLinkedList.prototype.removeHigher = function(){
-    
+    if(!this.head) return null;
+    let value = this.head.value;
+    this.head = this.head.next;
+    return value;
 }
 
 
 // EJERCICIO 6
-// Crea el metodo 'removeLower' que deve devolver el valor mas bajo de la linked list 
+// Crea el metodo 'removeLower' que deve devolver el valor mas bajo de la linked list
 // removiendo su nodo corresponidente:
 // Ejemplo:
 // > LL.print()
@@ -179,7 +226,20 @@ OrderedLinkedList.prototype.removeHigher = function(){
 // < null
 
 OrderedLinkedList.prototype.removeLower = function(){
-    
+    if(!this.head) return null;
+    if(!this.head.next) {
+        let value = this.head.value;
+        this.head = null;
+        return value;
+    }
+    let current = this.head;
+    let previous = current
+    while(current.next) {
+        previous = current;
+        current = current.next;
+    }
+    previous.next = null
+    return current.value;
 }
 
 
@@ -189,14 +249,14 @@ OrderedLinkedList.prototype.removeLower = function(){
 // EJERCICIO 7
 // Implementar la funcion multiCallbacks:
 // la funcion multiCallbacks recibe dos arrays de objetos cuyas propiedades son dos,
-// 'cb' que es una funcion, y 'time' que es el tiempo estimado de ejecucion de dicha funcion 
+// 'cb' que es una funcion, y 'time' que es el tiempo estimado de ejecucion de dicha funcion
 // este ultimo representado con un integer como se muestra acontinuacion:
 // let cbsExample = [
 //     {cb:function(){}, time: 2},
 //     {cb:function(){}, time: 3}
 // ]
-// De manera que lo que nuestra funcion 'multiCallbacks' debe de ir ejecutando las funciones 
-// sin pasarle parametros pero debe ir alternando las funciones de cbs1 y cbs2 
+// De manera que lo que nuestra funcion 'multiCallbacks' debe de ir ejecutando las funciones
+// sin pasarle parametros pero debe ir alternando las funciones de cbs1 y cbs2
 // segun cual de estas se estima que tarde menos, retornando un arreglo de resultados
 // de las mismas en el orden que fueron ejecutadas
 // Ejemplo:
@@ -212,8 +272,34 @@ OrderedLinkedList.prototype.removeLower = function(){
 // < ["2-1", "1-1", "1-2", "2-2"];
 
 function multiCallbacks(cbs1, cbs2){
-    
-}
+    let newArray = [];
+    let iterador1 = 0;
+    let iterador2 = 0;
+
+    while(cbs1.length > iterador1 && cbs2.length > iterador2){
+        if(cbs1[iterador1].time > cbs2[iterador2].time){
+            newArray.push((cbs2[iterador2].cb)());
+            iterador2 = iterador2 + 1;
+        }else{
+            newArray.push((cbs1[iterador1].cb)());
+            iterador1 = iterador1 + 1;
+        }
+    }
+
+    if(cbs2.length > iterador2){
+        while(cbs2.length > iterador2){
+            newArray.push((cbs2[iterador2].cb)());
+            iterador2 = iterador2 + 1;
+        }
+    }else{
+        while(cbs1.length > iterador1){
+            newArray.push((cbs1[iterador1].cb)());
+            iterador1 = iterador1 + 1;
+        }
+    }
+
+  return newArray;
+  }
 
 
 
@@ -231,7 +317,9 @@ function multiCallbacks(cbs1, cbs2){
 // resultado:[5,8,9,32,64]
 
 BinarySearchTree.prototype.toArray = function() {
-    
+    const arr = [];
+    this.depthFirstForEach((tree) => arr.push(tree));
+    return arr;
 }
 
 
@@ -246,11 +334,17 @@ BinarySearchTree.prototype.toArray = function() {
 // para numeros demasiado grandes, asi que vamos a implementarlo mediante un metodo
 // derivado de Trial Division como el que se muestra aca:
 // https://en.wikipedia.org/wiki/Primality_test
-// Si bien esta no es la mejor implementacion existente, con que uds puedan 
+// Si bien esta no es la mejor implementacion existente, con que uds puedan
 // informarse sobre algoritmos, leerlos de un pseudocodigo e implemnterlos alcanzara
 
 function primalityTest(n) {
-    
+    if(n < 2) return false;
+    for(let i = 2; i * i <= n; i++) {
+        if(n % i === 0) {
+            return false;
+        }
+    }
+    return true;
 }
 
 
@@ -260,11 +354,20 @@ function primalityTest(n) {
 // https://en.wikipedia.org/wiki/Quicksort
 
 function quickSort(array) {
-    
+    if(!array.length) return [];
+    let left = [];
+    let right = [];
+    let pivot = array[0];
+
+    for(let i = 1; i < array.length; i++) {
+        if(array[i] < pivot) left.push(array[i]);
+        else right.push(array[i]);
+    }
+    return [...quickSort(right), pivot, ...quickSort(left)]
 }
-// QuickSort ya lo conocen solo que este 
+// QuickSort ya lo conocen solo que este
 // ordena de mayor a menor
-// para esto hay que unir como right+mid+left o cambiar el 
+// para esto hay que unir como right+mid+left o cambiar el
 // signo menor en la comparacion con el pivot
 
 
@@ -283,17 +386,22 @@ function quickSort(array) {
 // < 32859
 
 function reverse(num){
-    
+    let reverse = 0;
+    while(num !== 0) {
+        reverse = reverse * 10 + num % 10;
+        num = Math.floor(num / 10);
+    };
+    return reverse;
 }
 // la grandiosa resolucion de Wilson!!!
-// declaran una variable donde 
+// declaran una variable donde
 // almacenar el el numero invertido
-// y van multiplicando por 10 la 
+// y van multiplicando por 10 la
 // porcion del numero que ya invirtieron
 // deforma que esta se corra hacia la izq
-// para agregar el ultimo numero de la 
+// para agregar el ultimo numero de la
 // porcion no revertida
-// y luego le quitan a la porcion 
+// y luego le quitan a la porcion
 // no revertida el ultimo numero
 
 module.exports = {
